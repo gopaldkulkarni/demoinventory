@@ -91,11 +91,13 @@ public class VaadinUI extends UI {
 
 		recentTripGrid = new Grid<>(Trip.class);
 		filterText = new TextField();
-		filterText.setPlaceholder("filter by number of days : Ener any Int value..");
+		filterText.setPlaceholder("filter by days");
+		filterText.setCaption("Showing the last 7 days trip as default. Enter any intger to expand");
 		filterText.addValueChangeListener(e -> showRecentTrips());
 
 		customerFilterText = new TextField();
-		customerFilterText.setPlaceholder("filter by Customer Type");
+		customerFilterText.setCaption("Showing all registered customer. You can filter by Customer Type");
+		customerFilterText.setPlaceholder("filter by CustomerType");
 		customerFilterText.addValueChangeListener(e -> showCustomers());
 		salesHeader = new HorizontalLayout();
 		totalBill = new Label("Total Sales :");
