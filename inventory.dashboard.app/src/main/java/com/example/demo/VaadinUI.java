@@ -1,14 +1,10 @@
 package com.example.demo;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.client.RestTemplate;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
@@ -39,6 +35,7 @@ public class VaadinUI extends UI {
 	Button tripBtn;
 	Button customerBtn;
 	Button analyticsBtn;
+	Button vehicleBtn;
 
 	private List<Component> tripComponents;
 	private List<Component> customerComponents;
@@ -46,6 +43,9 @@ public class VaadinUI extends UI {
 	ComboBox<String> custTypeDropDown;
 	HorizontalLayout salesHeader;
 	Label totalBill;
+
+	Grid<Vehicle> vehicleGrid;
+	private List<Component> vehicleComponents;
 
 	@Override
 	protected void init(VaadinRequest request) {
@@ -79,6 +79,11 @@ public class VaadinUI extends UI {
 		mContent.addComponent(analyticsBtn);
 		analyticsBtn.addClickListener(e -> showSales());
 
+		vehicleBtn = new Button("My Vehicles");
+		vehicleBtn.setStyleName(ValoTheme.BUTTON_BORDERLESS_COLORED);
+		mContent.addComponent(vehicleBtn);
+		vehicleBtn.addClickListener(e -> showVehicles());
+
 		custTypeDropDown = new ComboBox<>("Filter by Customer Type");
 		custTypeDropDown.setItems(new String[] { "INDIVIDUAL", "CORPORATE" });
 		custTypeDropDown.addValueChangeListener(e -> handleCustomerType());
@@ -101,6 +106,9 @@ public class VaadinUI extends UI {
 		customerFilterText.addValueChangeListener(e -> showCustomers());
 		salesHeader = new HorizontalLayout();
 		totalBill = new Label("Total Sales :");
+
+		vehicleGrid = new Grid<>(Vehicle.class);
+
 		// By Default
 		tripBtn.click();
 		tripBtn.focus();
@@ -110,9 +118,9 @@ public class VaadinUI extends UI {
 	private void handleCustomerType() {
 		String value = custTypeDropDown.getValue();
 		if (value == null || value.trim().isEmpty()) {
-			salesGrid.setItems(getSalesItems(null, null));
+			salesGrid.setItems(InvetoryService.getSalesItems(null, null));
 		} else {
-			salesGrid.setItems(getSalesItems(value, null));
+			salesGrid.setItems(InvetoryService.getSalesItems(value, null));
 		}
 		updateSales(value, null);
 	}
@@ -120,7 +128,19 @@ public class VaadinUI extends UI {
 	private ClickedComponent previousclicked;
 
 	enum ClickedComponent {
-		sales, trips, customers
+		sales, trips, customers, vehicles
+	}
+
+	private void showVehicles() {
+		removePreviousComponents();
+		previousclicked = ClickedComponent.vehicles;
+		mContent.addComponent(vehicleGrid);
+		mContent.setExpandRatio(vehicleGrid, 1);
+		vehicleGrid.setSizeFull();
+
+		vehicleComponents = new ArrayList<>();
+		vehicleComponents.add(vehicleGrid);
+		vehicleGrid.setItems(InvetoryService.getVehicles());
 	}
 
 	private void showSales() {
@@ -132,7 +152,7 @@ public class VaadinUI extends UI {
 		salesHeader.setComponentAlignment(totalBill, Alignment.MIDDLE_RIGHT);
 		mContent.addComponent(salesHeader);
 		mContent.addComponent(salesGrid);
-		salesGrid.setItems(getSalesItems(null, null));
+		salesGrid.setItems(InvetoryService.getSalesItems(null, null));
 		salesComponents = new ArrayList<>();
 		salesComponents.add(custTypeDropDown);
 		salesComponents.add(salesGrid);
@@ -144,46 +164,12 @@ public class VaadinUI extends UI {
 	}
 
 	private void updateSales(String customerType, String vehicleType) {
-		List<Sales> salesItems = getSalesItems(customerType, vehicleType);
+		List<Sales> salesItems = InvetoryService.getSalesItems(customerType, vehicleType);
 		double total = 0.0;
 		for (Sales s : salesItems) {
 			total += s.getBilledAmount().doubleValue();
 		}
 		this.totalBill.setValue("Total Sales :" + total);
-	}
-
-	private List<Sales> getSalesItems(String customerType, String vehicleType) {
-		String url = "http://localhost:9091/sales/";
-		RestTemplate restTemplate = new RestTemplate();
-		List<Sales> sales = new ArrayList<>();
-		for (int i = 1; i <= 10; i++) {
-			try {
-				Sales s = restTemplate.getForObject(url + i, Sales.class);
-				System.out.println("Got the one sale " + s);
-				if (s != null) {
-					// TODO write REST API to handle the customerType
-					if (customerType != null && vehicleType != null) {
-						if (s.getCustomerType().equalsIgnoreCase(customerType)
-								&& s.getVehicleType().equalsIgnoreCase(vehicleType))
-							sales.add(s);
-					} else if (customerType != null) {
-						if (s.getCustomerType().equalsIgnoreCase(customerType)) {
-							sales.add(s);
-						}
-					} else if (vehicleType != null) {
-						if (s.getVehicleType().equalsIgnoreCase(vehicleType)) {
-							sales.add(s);
-						}
-					} else {
-						sales.add(s);// add all
-					}
-				}
-			} catch (Exception e) {
-				System.out.println("May be no more elements! " + e.toString());
-				break;
-			}
-		}
-		return sales;
 	}
 
 	private void removePreviousComponents() {
@@ -199,10 +185,16 @@ public class VaadinUI extends UI {
 					this.mContent.removeComponent(c);
 				}
 			}
-		} else {
+		} else if (previousclicked == ClickedComponent.sales) {
 			if (salesComponents != null) {
 				for (Component c : salesComponents) {
 					this.mContent.removeComponent(c);
+				}
+			}
+		} else {
+			if (vehicleComponents != null) {
+				for (Component v : vehicleComponents) {
+					this.mContent.removeComponent(v);
 				}
 			}
 		}
@@ -216,7 +208,7 @@ public class VaadinUI extends UI {
 		mContent.addComponent(recentTripGrid);
 		recentTripGrid.setSizeFull();
 		mContent.setExpandRatio(recentTripGrid, 1);
-		recentTripGrid.setItems(getRecentTrips(_toIntOrError(filterText.getValue())));
+		recentTripGrid.setItems(InvetoryService.getRecentTrips(_toIntOrError(filterText.getValue())));
 		tripComponents = new ArrayList<>();
 		tripComponents.add(recentTripGrid);
 		tripComponents.add(filterText);
@@ -240,60 +232,12 @@ public class VaadinUI extends UI {
 		mContent.addComponent(customerGrid);
 		this.customerGrid.setVisible(true);
 		this.customerGrid.setEnabled(true);
-		this.customerGrid.setItems(getCustomers(customerFilterText.getValue()));
+		this.customerGrid.setItems(InvetoryService.getCustomers(customerFilterText.getValue()));
 		mContent.setExpandRatio(customerGrid, 1);
 		customerGrid.setSizeFull();
 		customerComponents = new ArrayList<>();
 		customerComponents.add(customerGrid);
 		customerComponents.add(customerFilterText);
-	}
-
-	private Collection<Customer> getCustomers(String filterTxt) {
-		String url = "http://localhost:8080/customer/";
-		RestTemplate restTemplate = new RestTemplate();
-		List<Customer> customers = new ArrayList<>();
-		for (int i = 1; i <= 10; i++) {
-			try {
-				Customer customer = restTemplate.getForObject(url + i, Customer.class);
-				System.out.println("Got the one " + customer);
-				if (customer != null) {
-					// TODO write REST API to handle the customerType
-					if (filterTxt.trim().isEmpty())
-						customers.add(customer);
-					else if (customer.getCustomerType().equalsIgnoreCase(filterTxt))
-						customers.add(customer);
-				}
-			} catch (Exception e) {
-				System.out.println("May be no more elements! " + e.toString());
-				break;
-			}
-		}
-		return customers;
-	}
-
-	private List<Trip> getRecentTrips(int days) {
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DATE, -days);
-		Date time = cal.getTime();
-		System.out.println("Date = " + time);
-
-		String url = "http://localhost:9001/trip/";
-		RestTemplate restTemplate = new RestTemplate();
-		List<Trip> trips = new ArrayList<>();
-		for (int i = 1; i <= 10; i++) {
-			try {
-				Trip t = restTemplate.getForObject(url + i, Trip.class);
-				System.out.println("Got the one Trip " + t);
-				if (t != null) {
-					if (t.getTripStart().getTime() >= time.getTime())
-						trips.add(t);
-				}
-			} catch (Exception e) {
-				System.out.println("May be no more trips! " + e.toString());
-				break;
-			}
-		}
-		return trips;
 	}
 
 }
