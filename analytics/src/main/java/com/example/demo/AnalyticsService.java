@@ -6,8 +6,12 @@ import java.util.List;
 import org.springframework.web.client.RestTemplate;
 
 public class AnalyticsService {
+	private static String customerPort = "9092";
+	private static String tripPort = "9093";
+	private static String vehiclePort = "9094";
+
 	private static List<Customer> loadCustomers() {
-		String url = "http://localhost:8080/customer/";
+		String url = "http://localhost:" + customerPort + "/customer/";
 		RestTemplate restTemplate = new RestTemplate();
 		List<Customer> customers = new ArrayList<>();
 		for (int i = 1; i <= 10; i++) {
@@ -25,7 +29,7 @@ public class AnalyticsService {
 	}
 
 	private Sales constructSalesObject(Trip t, List<Customer> customers) {
-		String url = "http://localhost:8082/vehicle/";
+		String url = "http://localhost:" + vehiclePort + "/vehicle/";
 		RestTemplate restTemplate = new RestTemplate();
 		Long vehicleId = t.getVehicleId();
 		String model = null;
@@ -64,7 +68,7 @@ public class AnalyticsService {
 		RestTemplate restTemplate;
 		List<Customer> customers = loadCustomers();
 
-		url = "http://localhost:9001/trip/";
+		url = "http://localhost:" + tripPort + "/trip/";
 		restTemplate = new RestTemplate();
 		List<Trip> trips = new ArrayList<>();
 		for (int i = 1; i <= 10; i++) {

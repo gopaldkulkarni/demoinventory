@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.ui.ValueChangeMode;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -37,6 +38,8 @@ public class VaadinUI extends UI {
 	Button analyticsBtn;
 	Button vehicleBtn;
 
+	HorizontalLayout menu;
+
 	private List<Component> tripComponents;
 	private List<Component> customerComponents;
 	private List<Component> salesComponents;
@@ -49,9 +52,12 @@ public class VaadinUI extends UI {
 
 	@Override
 	protected void init(VaadinRequest request) {
-		// TODO Auto-generated method stub
+
 		mContent = new VerticalLayout();
 		mContent.setSpacing(true);
+
+		menu = new HorizontalLayout();
+
 		setContent(mContent);
 		HorizontalLayout titleBar = new HorizontalLayout();
 		titleBar.setWidth("100%");
@@ -63,25 +69,27 @@ public class VaadinUI extends UI {
 		titleBar.addComponent(title);
 		titleBar.setExpandRatio(title, 1.0f); // Expand
 
+		mContent.addComponent(menu);
+
 		tripBtn = new Button("Trips");
 		tripBtn.addClickListener(e -> showRecentTrips());
 		tripBtn.setStyleName(ValoTheme.BUTTON_BORDERLESS_COLORED);
 		tripBtn.setSizeUndefined();
-		mContent.addComponent(tripBtn);
+		menu.addComponent(tripBtn);
 
 		customerBtn = new Button("Customers");
 		customerBtn.setStyleName(ValoTheme.BUTTON_BORDERLESS_COLORED);
 		customerBtn.addClickListener(e -> showCustomers());
-		mContent.addComponent(customerBtn);
+		menu.addComponent(customerBtn);
 
 		analyticsBtn = new Button("Analytics");
 		analyticsBtn.setStyleName(ValoTheme.BUTTON_BORDERLESS_COLORED);
-		mContent.addComponent(analyticsBtn);
+		menu.addComponent(analyticsBtn);
 		analyticsBtn.addClickListener(e -> showSales());
 
 		vehicleBtn = new Button("My Vehicles");
 		vehicleBtn.setStyleName(ValoTheme.BUTTON_BORDERLESS_COLORED);
-		mContent.addComponent(vehicleBtn);
+		menu.addComponent(vehicleBtn);
 		vehicleBtn.addClickListener(e -> showVehicles());
 
 		custTypeDropDown = new ComboBox<>("Filter by Customer Type");
@@ -99,11 +107,13 @@ public class VaadinUI extends UI {
 		filterText.setPlaceholder("filter by days");
 		filterText.setCaption("Showing the last 7 days trip as default. Enter any intger to expand");
 		filterText.addValueChangeListener(e -> showRecentTrips());
+		filterText.setValueChangeMode(ValueChangeMode.LAZY);
 
 		customerFilterText = new TextField();
 		customerFilterText.setCaption("Showing all registered customer. You can filter by Customer Type");
 		customerFilterText.setPlaceholder("filter by CustomerType");
 		customerFilterText.addValueChangeListener(e -> showCustomers());
+		customerFilterText.setValueChangeMode(ValueChangeMode.LAZY);
 		salesHeader = new HorizontalLayout();
 		totalBill = new Label("Total Sales :");
 

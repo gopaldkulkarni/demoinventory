@@ -9,8 +9,12 @@ import java.util.List;
 import org.springframework.web.client.RestTemplate;
 
 public class InvetoryService {
+	private static String customerPort = "9092";
+	private static String tripPort = "9093";
+	private static String vehiclePort = "9094";
+
 	public static List<Vehicle> getVehicles() {
-		String url = "http://localhost:8082/vehicle/";
+		String url = "http://localhost:" + vehiclePort + "/vehicle/";
 		RestTemplate restTemplate = new RestTemplate();
 		List<Vehicle> vehicles = new ArrayList<>();
 		for (int i = 1; i <= 20; i++) {
@@ -42,7 +46,7 @@ public class InvetoryService {
 								&& s.getVehicleType().equalsIgnoreCase(vehicleType))
 							sales.add(s);
 					} else if (customerType != null) {
-						if (s.getCustomerType().equalsIgnoreCase(customerType)) {
+						if (s.getCustomerType().toLowerCase().startsWith(customerType.toLowerCase())) {
 							sales.add(s);
 						}
 					} else if (vehicleType != null) {
@@ -62,7 +66,7 @@ public class InvetoryService {
 	}
 
 	public static Collection<Customer> getCustomers(String filterTxt) {
-		String url = "http://localhost:8080/customer/";
+		String url = "http://localhost:" + customerPort + "/customer/";
 		RestTemplate restTemplate = new RestTemplate();
 		List<Customer> customers = new ArrayList<>();
 		for (int i = 1; i <= 10; i++) {
@@ -90,7 +94,7 @@ public class InvetoryService {
 		Date time = cal.getTime();
 		System.out.println("Date = " + time);
 
-		String url = "http://localhost:9001/trip/";
+		String url = "http://localhost:" + tripPort + "/trip/";
 		RestTemplate restTemplate = new RestTemplate();
 		List<Trip> trips = new ArrayList<>();
 		for (int i = 1; i <= 10; i++) {
