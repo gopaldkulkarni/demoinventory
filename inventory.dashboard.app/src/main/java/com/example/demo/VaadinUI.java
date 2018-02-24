@@ -46,12 +46,15 @@ public class VaadinUI extends UI {
 	private List<Component> salesComponents;
 	ComboBox<String> custTypeDropDown;
 	HorizontalLayout salesHeader;
+	HorizontalLayout vehiclesHeader;
 	Label totalBill;
 
 	Grid<Vehicle> vehicleGrid;
 	private List<Component> vehicleComponents;
 
 	private ComboBox<VehicleTypes> vehicleTypeCombo;
+
+	private Button refreshCacheBtn;
 
 	@Override
 	protected void init(VaadinRequest request) {
@@ -106,6 +109,10 @@ public class VaadinUI extends UI {
 		vehicleTypeCombo = new ComboBox<>("Filter by vehicle");
 		vehicleTypeCombo.setItems(VehicleTypes.indica, VehicleTypes.innova, VehicleTypes.bmw, VehicleTypes.mercedece);
 		vehicleTypeCombo.addValueChangeListener(e -> updateSales());
+		vehiclesHeader = new HorizontalLayout();
+		refreshCacheBtn = new Button("RefreshCache");
+		refreshCacheBtn.setIcon(VaadinIcons.REFRESH);
+		refreshCacheBtn.addClickListener(e -> updateVehicles());
 
 		salesGrid = new Grid<>(Sales.class);
 		salesGrid.setColumns("id", "billedAmount", "customerType", "vehicleType");
@@ -136,11 +143,22 @@ public class VaadinUI extends UI {
 		totalBill.setCaption("Total Sales");
 
 		vehicleGrid = new Grid<>(Vehicle.class);
+		vehicleLabel = new Label("Showing all your vehicles!");
+		vehicleLabel.setStyleName(ValoTheme.LABEL_BOLD);
+		analyticsLabel = new Label("Showing all billed trips (Complted/Cancelled)");
+		analyticsLabel.setStyleName(ValoTheme.LABEL_BOLD);
 
 		// By Default
 		tripBtn.click();
 		tripBtn.focus();
 
+	}
+
+	private Label vehicleLabel;
+	private Label analyticsLabel;
+
+	private void updateVehicles() {
+		this.vehicleGrid.setItems(InvetoryService.getVehicles(true));
 	}
 
 	private void updateSales() {
@@ -168,18 +186,25 @@ public class VaadinUI extends UI {
 	private void showVehicles() {
 		removePreviousComponents();
 		previousclicked = ClickedComponent.vehicles;
+		vehiclesHeader.addComponent(vehicleLabel);
+		vehiclesHeader.addComponent(refreshCacheBtn);
+		vehiclesHeader.setComponentAlignment(vehicleLabel, Alignment.BOTTOM_RIGHT);
+		vehiclesHeader.setComponentAlignment(refreshCacheBtn, Alignment.BOTTOM_RIGHT);
+		mContent.addComponent(vehiclesHeader);
 		mContent.addComponent(vehicleGrid);
 		mContent.setExpandRatio(vehicleGrid, 1);
 		vehicleGrid.setSizeFull();
 
 		vehicleComponents = new ArrayList<>();
+		vehicleComponents.add(vehiclesHeader);
 		vehicleComponents.add(vehicleGrid);
-		vehicleGrid.setItems(InvetoryService.getVehicles());
+		vehicleGrid.setItems(InvetoryService.getVehicles(false));
 	}
 
 	private void showSales() {
 		removePreviousComponents();
 		previousclicked = ClickedComponent.sales;
+		mContent.addComponent(analyticsLabel);
 		salesHeader.addComponent(custTypeDropDown);
 		salesHeader.addComponent(vehicleTypeCombo);
 		salesHeader.addComponent(totalBill);

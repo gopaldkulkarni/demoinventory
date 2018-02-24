@@ -13,7 +13,7 @@ public class InventoryServiceTest {
 
 	@Test
 	public void getVehicles() {
-		assertEquals(20, InvetoryService.getVehicles().size());
+		assertEquals(20, InvetoryService.getVehicles(false).size());
 	}
 
 	@Test

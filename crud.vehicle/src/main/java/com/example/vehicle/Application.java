@@ -16,7 +16,7 @@ public class Application {
 	public CommandLineRunner loadData(VehicleRepository repository) {
 		return (args) -> {
 			// save a couple of trips
-			repository.save(new Vehicle("Innova", 12000L, 7));
+			repository.save(new Vehicle("Innova", 13000L, 7));
 			repository.save(new Vehicle("Indica", 5000L, 5));
 			repository.save(new Vehicle("Innova", 500L, 7));
 			repository.save(new Vehicle("Mercedece E2", 12000L, 5));

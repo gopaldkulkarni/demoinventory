@@ -12,24 +12,12 @@ import org.springframework.web.client.RestTemplate;
 public class InvetoryService {
 	private static String customerPort = "9092";
 	private static String tripPort = "9093";
-	private static String vehiclePort = "9094";
 
-	public static List<Vehicle> getVehicles() {
-		String url = "http://localhost:" + vehiclePort + "/vehicle/";
-		RestTemplate restTemplate = new RestTemplate();
-		List<Vehicle> vehicles = new ArrayList<>();
-		for (int i = 1; i <= 20; i++) {
-			try {
-				Vehicle v = restTemplate.getForObject(url + i, Vehicle.class);
-				System.out.println("Got the one " + v);
-				if (v != null) {
-					vehicles.add(v);
-				}
-			} catch (Exception e) {
-				System.out.println("May be no more elements! for id " + i);
-			}
+	public static List<Vehicle> getVehicles(Boolean refreshCache) {
+		if (refreshCache) {
+			InventoryServiceCache.invalidateCache();
 		}
-		return vehicles;
+		return InventoryServiceCache.getVehicles();
 	}
 
 	public static List<Sales> getSalesItems(String customerType, String vehicleType) {
@@ -134,6 +122,9 @@ public class InvetoryService {
 
 	public static List<Trip> getRecentTrips(int days) {
 		Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+		cal.set(Calendar.HOUR_OF_DAY, 0); // anything 0 - 23
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
 		Date currentTime = cal.getTime();
 
 		cal.add(Calendar.DAY_OF_MONTH, days);

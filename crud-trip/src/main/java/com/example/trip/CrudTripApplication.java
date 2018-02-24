@@ -27,11 +27,11 @@ public class CrudTripApplication {
 			repository.save(new Trip("444", "INPROGRESS", 3L, 1L, getPastDateForDays(1), null, "INSTATION"));
 			repository.save(new Trip("555", "DONE", 4L, 2L, new Date(), new Date(), "INSTATION"));
 			repository.save(new Trip("666", "INPROGRESS", 5L, 5L, getPastDateForDays(2), null, "INSTATION"));
-			repository.save(new Trip("100", "INPROGRESS", 4L, 4L, getPastDateForDays(2), new Date(), "INSTATION"));
-			repository.save(new Trip("50", "INPROGRESS", 4L, 4L, getFutureDateForDays(2), new Date(), "OUTSTATION"));
-			repository.save(new Trip("250", "INPROGRESS", 4L, 4L, getFutureDateForDays(1), new Date(), "OUTSTATION"));
-			repository.save(new Trip("600", "INPROGRESS", 4L, 4L, getFutureDateForDays(7), new Date(), "OUTSTATION"));
-			repository.save(new Trip("700", "INPROGRESS", 4L, 4L, getFutureDateForDays(6), new Date(), "INSTATION"));
+			repository.save(new Trip("100", "INPROGRESS", 6L, 6L, getPastDateForDays(2), null, "INSTATION"));
+			repository.save(new Trip("0", "INPROGRESS", 7L, 7L, getFutureDateForDays(2), null, "OUTSTATION"));
+			repository.save(new Trip("0", "INPROGRESS", 8L, 8L, getFutureDateForDays(1), null, "OUTSTATION"));
+			repository.save(new Trip("0", "INPROGRESS", 1L, 9L, getFutureDateForDays(7), null, "OUTSTATION"));
+			repository.save(new Trip("0", "INPROGRESS", 1L, 15L, getFutureDateForDays(0), null, "INSTATION"));
 
 			// fetch all trips
 			log.info("Customers found with findAll():");
