@@ -46,7 +46,7 @@ public class AnalyticsService {
 			}
 		}
 		Double price = getBilledAmount(t.getDistanceCovered(), model);
-		Sales sales = new Sales(price, customerType, model, t.getTripType(), model);
+		Sales sales = new Sales(price, customerType, model, t.getTripType(), model, t.getId());
 
 		return sales;
 	}

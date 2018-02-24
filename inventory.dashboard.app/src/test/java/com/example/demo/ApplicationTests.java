@@ -2,6 +2,8 @@ package com.example.demo;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +20,23 @@ public class ApplicationTests {
 	public void testHome() throws Exception {
 		ResponseEntity<String> entity = new TestRestTemplate().getForEntity("http://localhost:8081", String.class);
 		assertEquals(HttpStatus.OK, entity.getStatusCode());
+	}
+
+	VaadinUI app;
+
+	@Before
+	public void setUp() throws Exception {
+		app = new VaadinUI();
+	}
+
+	@After
+	public void tearDown() {
+		app.close();
+	}
+
+	@Test
+	public void tripView() {
+		System.out.println("Total components " + app.getComponentCount());
 	}
 
 }

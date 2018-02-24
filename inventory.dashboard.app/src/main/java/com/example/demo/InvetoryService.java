@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.springframework.web.client.RestTemplate;
 
@@ -40,22 +41,29 @@ public class InvetoryService {
 				Sales s = restTemplate.getForObject(url + i, Sales.class);
 				System.out.println("Got the one sale " + s);
 				if (s != null) {
-					// TODO write REST API to handle the customerType
-					if (customerType != null && vehicleType != null) {
-						if (s.getCustomerType().equalsIgnoreCase(customerType)
-								&& s.getVehicleType().equalsIgnoreCase(vehicleType))
-							sales.add(s);
-					} else if (customerType != null) {
-						if (s.getCustomerType().toLowerCase().startsWith(customerType.toLowerCase())) {
-							sales.add(s);
-						}
-					} else if (vehicleType != null) {
-						if (s.getVehicleType().equalsIgnoreCase(vehicleType)) {
-							sales.add(s);
-						}
-					} else {
-						sales.add(s);// add all
+					if (customerType == null && vehicleType == null) {
+						sales.add(s);
 					}
+					if (matchFound(s, customerType, vehicleType)) {
+						sales.add(s);
+					}
+					// TODO write REST API to handle the customerType
+					// if (customerType != null && vehicleType != null) {
+					// if (s.getCustomerType().equalsIgnoreCase(customerType)
+					// && s.getVehicleType().equalsIgnoreCase(vehicleType))
+					// sales.add(s);
+					// } else if (customerType != null) {
+					// if (s.getCustomerType().toLowerCase().startsWith(customerType.toLowerCase()))
+					// {
+					// sales.add(s);
+					// }
+					// } else if (vehicleType != null) {
+					// if (s.getVehicleType().equalsIgnoreCase(vehicleType)) {
+					// sales.add(s);
+					// }
+					// } else {
+					// sales.add(s);// add all
+					// }
 				}
 			} catch (Exception e) {
 				System.out.println("May be no more elements! " + e.toString());
@@ -63,6 +71,23 @@ public class InvetoryService {
 			}
 		}
 		return sales;
+	}
+
+	private static boolean matchFound(Sales s, String customerType, String vehicleType) {
+		System.out.println("Checking match for " + customerType + " " + vehicleType);
+		System.out.println("Against : " + s);
+		if (customerType != null && !customerType.trim().isEmpty()) {
+			if (!s.getCustomerType().toLowerCase().startsWith(customerType.toLowerCase())) {
+				return false;
+			}
+		}
+		if (vehicleType == null) {
+			return true;
+		}
+		if (s.getVehicleType().toLowerCase().startsWith(vehicleType))
+			return true;
+
+		return false;
 	}
 
 	public static Collection<Customer> getCustomers(String filterTxt) {
@@ -88,9 +113,30 @@ public class InvetoryService {
 		return customers;
 	}
 
+	public static List<Trip> getAllTrips() {
+
+		String url = "http://localhost:" + tripPort + "/trip/";
+		RestTemplate restTemplate = new RestTemplate();
+		List<Trip> trips = new ArrayList<>();
+		for (int i = 1; i <= 10; i++) {
+			try {
+				Trip t = restTemplate.getForObject(url + i, Trip.class);
+				System.out.println("Got the one Trip " + t);
+				if (t != null) {
+					trips.add(t);
+				}
+			} catch (Exception e) {
+				System.out.println("May be no more trips! " + e.toString());
+			}
+		}
+		return trips;
+	}
+
 	public static List<Trip> getRecentTrips(int days) {
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DATE, -days);
+		Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+		Date currentTime = cal.getTime();
+
+		cal.add(Calendar.DAY_OF_MONTH, days);
 		Date time = cal.getTime();
 		System.out.println("Date = " + time);
 
@@ -102,8 +148,10 @@ public class InvetoryService {
 				Trip t = restTemplate.getForObject(url + i, Trip.class);
 				System.out.println("Got the one Trip " + t);
 				if (t != null) {
-					if (t.getTripStart().getTime() >= time.getTime())
+					if (t.getTripStart().getTime() >= currentTime.getTime())
 						trips.add(t);
+					else
+						System.out.println("Not within 7 days!" + t.getTripStart());
 				}
 			} catch (Exception e) {
 				System.out.println("May be no more trips! " + e.toString());

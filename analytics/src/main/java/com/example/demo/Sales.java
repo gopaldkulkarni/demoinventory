@@ -12,7 +12,6 @@ public class Sales {
 	private Long id;
 
 	private Double billedAmount;
-
 	private String customerType;
 
 	private String vehicleType;
@@ -21,17 +20,21 @@ public class Sales {
 
 	private String vehicleModel;
 
+	private Long tripId;
+
 	public Sales() {
 
 	}
 
-	public Sales(Double billedAmount, String customerType, String vehicleType, String tripType, String vehicleModel) {
+	public Sales(Double billedAmount, String customerType, String vehicleType, String tripType, String vehicleModel,
+			Long tripId) {
 		super();
 		this.billedAmount = billedAmount;
 		this.customerType = customerType;
 		this.vehicleType = vehicleType;
 		this.tripType = tripType;
 		this.vehicleModel = vehicleModel;
+		this.tripId = tripId;
 	}
 
 	public String getVehicleType() {
@@ -76,6 +79,14 @@ public class Sales {
 
 	public void setVehicleModel(String vehicleModel) {
 		vehicleModel = vehicleModel;
+	}
+
+	public Long getTripId() {
+		return tripId;
+	}
+
+	public void setTripId(Long tripId) {
+		this.tripId = tripId;
 	}
 
 }

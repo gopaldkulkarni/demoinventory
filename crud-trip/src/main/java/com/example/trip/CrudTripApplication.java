@@ -22,12 +22,16 @@ public class CrudTripApplication {
 	public CommandLineRunner loadData(TripRepository repository) {
 		return (args) -> {
 			// save a couple of trips
-			repository.save(new Trip("124", "DONE", 1L, 1L, getDateForDay(9), new Date(), "OUTSTATION"));
-			repository.save(new Trip("234", "CANCELLED", 1L, 2L, getDateForDay(7), new Date(), "OUTSTATION"));
-			repository.save(new Trip("444", "INPROGRESS", 3L, 1L, getDateForDay(1), null, "INSTATION"));
+			repository.save(new Trip("124", "DONE", 1L, 1L, getPastDateForDays(9), new Date(), "OUTSTATION"));
+			repository.save(new Trip("234", "CANCELLED", 1L, 2L, getPastDateForDays(7), new Date(), "OUTSTATION"));
+			repository.save(new Trip("444", "INPROGRESS", 3L, 1L, getPastDateForDays(1), null, "INSTATION"));
 			repository.save(new Trip("555", "DONE", 4L, 2L, new Date(), new Date(), "INSTATION"));
-			repository.save(new Trip("666", "INPROGRESS", 5L, 5L, getDateForDay(2), null, "INSTATION"));
-			repository.save(new Trip("100", "INPROGRESS", 4L, 4L, getDateForDay(2), new Date(), "INSTATION"));
+			repository.save(new Trip("666", "INPROGRESS", 5L, 5L, getPastDateForDays(2), null, "INSTATION"));
+			repository.save(new Trip("100", "INPROGRESS", 4L, 4L, getPastDateForDays(2), new Date(), "INSTATION"));
+			repository.save(new Trip("50", "INPROGRESS", 4L, 4L, getFutureDateForDays(2), new Date(), "OUTSTATION"));
+			repository.save(new Trip("250", "INPROGRESS", 4L, 4L, getFutureDateForDays(1), new Date(), "OUTSTATION"));
+			repository.save(new Trip("600", "INPROGRESS", 4L, 4L, getFutureDateForDays(7), new Date(), "OUTSTATION"));
+			repository.save(new Trip("700", "INPROGRESS", 4L, 4L, getFutureDateForDays(6), new Date(), "INSTATION"));
 
 			// fetch all trips
 			log.info("Customers found with findAll():");
@@ -39,9 +43,15 @@ public class CrudTripApplication {
 		};
 	}
 
-	private Date getDateForDay(int beforeDays) {
+	private Date getPastDateForDays(int beforeDays) {
 		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DATE, -beforeDays);
+		cal.add(Calendar.DAY_OF_MONTH, -beforeDays);
+		return cal.getTime();
+	}
+
+	private Date getFutureDateForDays(int days) {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_MONTH, +days);
 		return cal.getTime();
 	}
 }

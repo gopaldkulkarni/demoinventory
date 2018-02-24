@@ -1,6 +1,7 @@
 package com.example.demo;
 
 public class Sales {
+	private Long id;
 	private String customerType;
 	private Double billedAmount;
 	private String vehicleType;
@@ -27,6 +28,20 @@ public class Sales {
 
 	public void setVehicleType(String vehicleType) {
 		this.vehicleType = vehicleType;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setTripId(Long id) {
+		this.id = id;
+	}
+
+	@Override
+	public String toString() {
+		return "Sales [id=" + id + ", customerType=" + customerType + ", billedAmount=" + billedAmount
+				+ ", vehicleType=" + vehicleType + "]";
 	}
 
 }

@@ -3,7 +3,7 @@ package com.example.demo;
 import java.util.Date;
 
 public class Trip {
-
+	private Long id;
 	private Date tripStart;
 	private Date tripEnd;
 
@@ -76,6 +76,14 @@ public class Trip {
 
 	public void setTripType(String tripType) {
 		this.tripType = tripType;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 }

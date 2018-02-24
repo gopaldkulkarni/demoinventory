@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.ValueChangeMode;
 import com.vaadin.spring.annotation.SpringUI;
@@ -31,7 +32,7 @@ public class VaadinUI extends UI {
 	Grid<Trip> recentTripGrid;
 	Grid<Sales> salesGrid;
 
-	TextField filterText;
+	ComboBox<TripFilter> tripFilterCombo;
 	TextField customerFilterText;
 	Button tripBtn;
 	Button customerBtn;
@@ -49,6 +50,8 @@ public class VaadinUI extends UI {
 
 	Grid<Vehicle> vehicleGrid;
 	private List<Component> vehicleComponents;
+
+	private ComboBox<VehicleTypes> vehicleTypeCombo;
 
 	@Override
 	protected void init(VaadinRequest request) {
@@ -74,28 +77,38 @@ public class VaadinUI extends UI {
 		tripBtn = new Button("Trips");
 		tripBtn.addClickListener(e -> showRecentTrips());
 		tripBtn.setStyleName(ValoTheme.BUTTON_BORDERLESS_COLORED);
+		tripBtn.setIcon(VaadinIcons.PAPERPLANE);
 		tripBtn.setSizeUndefined();
 		menu.addComponent(tripBtn);
 
 		customerBtn = new Button("Customers");
 		customerBtn.setStyleName(ValoTheme.BUTTON_BORDERLESS_COLORED);
+		customerBtn.setIcon(VaadinIcons.USER);
 		customerBtn.addClickListener(e -> showCustomers());
 		menu.addComponent(customerBtn);
 
 		analyticsBtn = new Button("Analytics");
 		analyticsBtn.setStyleName(ValoTheme.BUTTON_BORDERLESS_COLORED);
+		analyticsBtn.setIcon(VaadinIcons.CHART);
 		menu.addComponent(analyticsBtn);
 		analyticsBtn.addClickListener(e -> showSales());
 
 		vehicleBtn = new Button("My Vehicles");
 		vehicleBtn.setStyleName(ValoTheme.BUTTON_BORDERLESS_COLORED);
+		vehicleBtn.setIcon(VaadinIcons.CAR);
 		menu.addComponent(vehicleBtn);
 		vehicleBtn.addClickListener(e -> showVehicles());
 
 		custTypeDropDown = new ComboBox<>("Filter by Customer Type");
 		custTypeDropDown.setItems(new String[] { "INDIVIDUAL", "CORPORATE" });
-		custTypeDropDown.addValueChangeListener(e -> handleCustomerType());
+		custTypeDropDown.addValueChangeListener(e -> updateSales());
+
+		vehicleTypeCombo = new ComboBox<>("Filter by vehicle");
+		vehicleTypeCombo.setItems(VehicleTypes.indica, VehicleTypes.innova, VehicleTypes.bmw, VehicleTypes.mercedece);
+		vehicleTypeCombo.addValueChangeListener(e -> updateSales());
+
 		salesGrid = new Grid<>(Sales.class);
+		salesGrid.setColumns("id", "billedAmount", "customerType", "vehicleType");
 
 		// Initialize Grids
 
@@ -103,11 +116,14 @@ public class VaadinUI extends UI {
 		customerGrid.setVisible(false);
 
 		recentTripGrid = new Grid<>(Trip.class);
-		filterText = new TextField();
-		filterText.setPlaceholder("filter by days");
-		filterText.setCaption("Showing the last 7 days trip as default. Enter any intger to expand");
-		filterText.addValueChangeListener(e -> showRecentTrips());
-		filterText.setValueChangeMode(ValueChangeMode.LAZY);
+		recentTripGrid.setColumns("id", "tripStart", "tripEnd", "distanceCovered", "customerId", "vehicleId",
+				"tripStatus");
+
+		tripFilterCombo = new ComboBox<>();
+		tripFilterCombo.setPlaceholder("Select Filter");
+		tripFilterCombo.setItems(TripFilter.all, TripFilter.next7Days);
+		tripFilterCombo.setCaption("Showing the next 7 days trip as default...");
+		tripFilterCombo.addValueChangeListener(e -> showTrips());
 
 		customerFilterText = new TextField();
 		customerFilterText.setCaption("Showing all registered customer. You can filter by Customer Type");
@@ -115,7 +131,9 @@ public class VaadinUI extends UI {
 		customerFilterText.addValueChangeListener(e -> showCustomers());
 		customerFilterText.setValueChangeMode(ValueChangeMode.LAZY);
 		salesHeader = new HorizontalLayout();
-		totalBill = new Label("Total Sales :");
+		totalBill = new Label("");
+		totalBill.setIcon(VaadinIcons.MONEY);
+		totalBill.setCaption("Total Sales");
 
 		vehicleGrid = new Grid<>(Vehicle.class);
 
@@ -125,14 +143,20 @@ public class VaadinUI extends UI {
 
 	}
 
-	private void handleCustomerType() {
-		String value = custTypeDropDown.getValue();
-		if (value == null || value.trim().isEmpty()) {
-			salesGrid.setItems(InvetoryService.getSalesItems(null, null));
-		} else {
-			salesGrid.setItems(InvetoryService.getSalesItems(value, null));
+	private void updateSales() {
+		String vehicleType = null;
+		if (this.vehicleTypeCombo.getValue() == VehicleTypes.indica) {
+			vehicleType = "indica";
+		} else if (this.vehicleTypeCombo.getValue() == VehicleTypes.innova) {
+			vehicleType = "innova";
+		} else if (this.vehicleTypeCombo.getValue() == VehicleTypes.bmw) {
+			vehicleType = "bmw";
+		} else if (this.vehicleTypeCombo.getValue() == VehicleTypes.mercedece) {
+			vehicleType = "mercedece";
 		}
-		updateSales(value, null);
+		String customerType = custTypeDropDown.getValue();
+		salesGrid.setItems(InvetoryService.getSalesItems(customerType, vehicleType));
+		updateBilledAmount(customerType, vehicleType);
 	}
 
 	private ClickedComponent previousclicked;
@@ -157,6 +181,7 @@ public class VaadinUI extends UI {
 		removePreviousComponents();
 		previousclicked = ClickedComponent.sales;
 		salesHeader.addComponent(custTypeDropDown);
+		salesHeader.addComponent(vehicleTypeCombo);
 		salesHeader.addComponent(totalBill);
 		totalBill.setStyleName(ValoTheme.LABEL_HUGE);
 		salesHeader.setComponentAlignment(totalBill, Alignment.MIDDLE_RIGHT);
@@ -170,16 +195,17 @@ public class VaadinUI extends UI {
 
 		mContent.setExpandRatio(salesGrid, 1);
 		salesGrid.setSizeFull();
-		updateSales(null, null);
+		updateBilledAmount(null, null);
 	}
 
-	private void updateSales(String customerType, String vehicleType) {
+	// TODO move to the analytics and make it plugable
+	private void updateBilledAmount(String customerType, String vehicleType) {
 		List<Sales> salesItems = InvetoryService.getSalesItems(customerType, vehicleType);
 		double total = 0.0;
 		for (Sales s : salesItems) {
 			total += s.getBilledAmount().doubleValue();
 		}
-		this.totalBill.setValue("Total Sales :" + total);
+		this.totalBill.setValue("Rs   " + total);
 	}
 
 	private void removePreviousComponents() {
@@ -211,28 +237,35 @@ public class VaadinUI extends UI {
 
 	}
 
+	private void showTrips() {
+		if (this.tripFilterCombo.getValue() == TripFilter.next7Days) {
+			showRecentTrips();
+		} else {
+			removePreviousComponents();
+			previousclicked = ClickedComponent.trips;
+			mContent.addComponent(tripFilterCombo);
+			mContent.addComponent(recentTripGrid);
+			recentTripGrid.setSizeFull();
+			mContent.setExpandRatio(recentTripGrid, 1);
+			recentTripGrid.setItems(InvetoryService.getAllTrips());
+			tripComponents = new ArrayList<>();
+			tripComponents.add(recentTripGrid);
+			tripComponents.add(tripFilterCombo);
+		}
+	}
+
 	private void showRecentTrips() {
 		removePreviousComponents();
 		previousclicked = ClickedComponent.trips;
-		mContent.addComponent(filterText);
+		mContent.addComponent(tripFilterCombo);
 		mContent.addComponent(recentTripGrid);
 		recentTripGrid.setSizeFull();
 		mContent.setExpandRatio(recentTripGrid, 1);
-		recentTripGrid.setItems(InvetoryService.getRecentTrips(_toIntOrError(filterText.getValue())));
+		recentTripGrid.setItems(InvetoryService.getRecentTrips(7));
 		tripComponents = new ArrayList<>();
 		tripComponents.add(recentTripGrid);
-		tripComponents.add(filterText);
+		tripComponents.add(tripFilterCombo);
 
-	}
-
-	private int _toIntOrError(String value) {
-		try {
-			int intValue = Integer.parseInt(value);
-			return intValue;
-		} catch (NumberFormatException ee) {
-			log.error("Only integer value allowed. Fall backed to value 7");// TODO can be shown as a dialog
-			return 7;
-		}
 	}
 
 	private void showCustomers() {
