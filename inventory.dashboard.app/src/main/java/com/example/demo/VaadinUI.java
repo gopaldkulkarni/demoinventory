@@ -145,7 +145,8 @@ public class VaadinUI extends UI {
 		vehicleGrid = new Grid<>(Vehicle.class);
 		vehicleLabel = new Label("Showing all your vehicles!");
 		vehicleLabel.setStyleName(ValoTheme.LABEL_BOLD);
-		analyticsLabel = new Label("Showing all billed trips (Complted/Cancelled)");
+		analyticsLabel = new Label(
+				"Showing billing information. The billed amount 0.0 indicates, these trips are in progress");
 		analyticsLabel.setStyleName(ValoTheme.LABEL_BOLD);
 
 		// By Default
@@ -217,6 +218,7 @@ public class VaadinUI extends UI {
 		salesComponents.add(custTypeDropDown);
 		salesComponents.add(salesGrid);
 		salesComponents.add(salesHeader);
+		salesComponents.add(analyticsLabel);
 
 		mContent.setExpandRatio(salesGrid, 1);
 		salesGrid.setSizeFull();

@@ -9,5 +9,4 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 @RepositoryRestResource(collectionResourceRel = "sales", path = "sales")
 public interface SalesRepository extends JpaRepository<Sales, Long> {
 	List<Sales> findByCustomerType(@Param("customerType") String customertype);
-
 }

@@ -31,9 +31,10 @@ public class InventoryServiceCache {
 		for (int i = 1; i <= 20; i++) {
 			try {
 				Vehicle v = restTemplate.getForObject(url + i, Vehicle.class);
-				System.out.println("Got the one " + v);
+				System.out.println("Got the one trips" + v);
 				if (v != null) {
 					vehicles.add(v);
+					v.setInuse(InvetoryService.vehicleInUse(v.getVehicleId()));
 				}
 			} catch (Exception e) {
 				System.out.println("May be no more elements! for id " + i);
@@ -45,4 +46,5 @@ public class InventoryServiceCache {
 	public static void loadVehicle(List<Vehicle> vehicles) {
 		cachedItems.put(VEHICLE, vehicles);
 	}
+
 }

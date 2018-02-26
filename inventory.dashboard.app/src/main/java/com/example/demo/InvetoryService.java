@@ -31,27 +31,9 @@ public class InvetoryService {
 				if (s != null) {
 					if (customerType == null && vehicleType == null) {
 						sales.add(s);
-					}
-					if (matchFound(s, customerType, vehicleType)) {
+					} else if (matchFound(s, customerType, vehicleType)) {
 						sales.add(s);
 					}
-					// TODO write REST API to handle the customerType
-					// if (customerType != null && vehicleType != null) {
-					// if (s.getCustomerType().equalsIgnoreCase(customerType)
-					// && s.getVehicleType().equalsIgnoreCase(vehicleType))
-					// sales.add(s);
-					// } else if (customerType != null) {
-					// if (s.getCustomerType().toLowerCase().startsWith(customerType.toLowerCase()))
-					// {
-					// sales.add(s);
-					// }
-					// } else if (vehicleType != null) {
-					// if (s.getVehicleType().equalsIgnoreCase(vehicleType)) {
-					// sales.add(s);
-					// }
-					// } else {
-					// sales.add(s);// add all
-					// }
 				}
 			} catch (Exception e) {
 				System.out.println("May be no more elements! " + e.toString());
@@ -139,9 +121,9 @@ public class InvetoryService {
 				Trip t = restTemplate.getForObject(url + i, Trip.class);
 				System.out.println("Got the one Trip " + t);
 				if (t != null) {
-					if (t.getTripStart().getTime() >= currentTime.getTime())
+					if (t.getTripStart().getTime() >= currentTime.getTime()) {
 						trips.add(t);
-					else
+					} else
 						System.out.println("Not within 7 days!" + t.getTripStart());
 				}
 			} catch (Exception e) {
@@ -150,6 +132,25 @@ public class InvetoryService {
 			}
 		}
 		return trips;
+	}
+
+	/**
+	 * to know if the given ID is in use
+	 * 
+	 * @param vehicleId
+	 * @return
+	 */
+	public static boolean vehicleInUse(Long vehicleId) {
+		List<Trip> trips = getAllTrips();
+		for (Trip t : trips) {
+			if (t.getVehicleId() == vehicleId) {
+				if (t.getTripStatus().toLowerCase().indexOf("inprogress") >= 0) {
+					return true;
+				}
+				break;
+			}
+		}
+		return false;
 	}
 
 }

@@ -17,8 +17,9 @@ public class Trip {
 	private Date tripStart;
 	private Date tripEnd;
 
-	private String distanceCovered;
+	private String distanceCovered; // TODO String?
 	private String tripStatus; // One of the Completed, InProgress, Cancelled
+	// TODO what if the trip is for future date?
 
 	private Long customerId;
 	private Long vehicleId;
